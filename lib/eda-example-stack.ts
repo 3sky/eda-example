@@ -99,11 +99,13 @@ export class EdaExampleStack extends cdk.Stack {
     );
 
     userData.addCommands(
-      `dnf --assumeyes install maven gcc java-17-openjdk python3-pip python3-devel`,
+      `dnf --assumeyes install git maven gcc java-17-openjdk python3-pip python3-devel`,
       `echo 'export JAVA_HOME=/usr/lib/jvm/jre-17-openjdk' >> /etc/profile`,
       `pip3 install wheel ansible ansible-rulebook ansible-runner`,
       `echo 'export PATH=$PATH:/usr/local/bin' >> /etc/profile`,
-      `ansible-galaxy collection install ansible.eda`,
+      `mkdir /opt/ansible && chown -R ec2-user:. /opt/ansible`,
+      `git clone https://github.com/3sky/eda-example-ansible`,
+      `cd /opt/ansible/eda-example-ansible && ansible-galaxy collection install -r collections/requirments.yml -p collections`,
     );
 
     machineList.forEach((host) => {
@@ -119,10 +121,6 @@ export class EdaExampleStack extends cdk.Stack {
           ...defaultInstanceProps,
         });
         runner.addSecurityGroup(runnerSG);
-        new cdk.CfnOutput(this, "runner-vm", {
-          value: runner.instancePrivateIp,
-          description: "Private IP address of runner node",
-        });
       } else if (host == "bastion") {
         const bastion = new ec2.Instance(this, host, {
           instanceName: host,
@@ -133,7 +131,7 @@ export class EdaExampleStack extends cdk.Stack {
           securityGroup: bastionSG,
           ...defaultInstanceProps,
         });
-        new cdk.CfnOutput(this, "bastion-vm", {
+        new cdk.CfnOutput(this, "bastion", {
           value: bastion.instancePublicIp,
           description: "Public IP address of the bastion instance",
         });
@@ -146,10 +144,6 @@ export class EdaExampleStack extends cdk.Stack {
           privateIpAddress: "10.192.0.90",
           securityGroup: generalSG,
           ...defaultInstanceProps,
-        });
-        new cdk.CfnOutput(this, "compute-vm", {
-          value: compute.instancePrivateIp,
-          description: "Private IP addres of compute node",
         });
       }
     });
