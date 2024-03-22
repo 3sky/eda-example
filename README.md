@@ -93,8 +93,9 @@ Host compute
 - compute is empty RHEL box
 
 **Please be aware, that conenction from runner to compute
-requires setting ssh key pairs between them**
+requires setting ssh key pairs between them. Where login with user/password is disabled**
 
+That is why the easiest way will be adding key content to `~/.ssh/authorized_keys` manually.
 
 ## Useful commands (for working with CDK)
 
