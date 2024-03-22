@@ -97,6 +97,12 @@ requires setting ssh key pairs between them. Where login with user/password is d
 
 That is why the easiest way will be adding key content to `~/.ssh/authorized_keys` manually.
 
+1. Also what is important remember to clean your environment
+
+``` shell
+make clean
+```
+
 ## Useful commands (for working with CDK)
 
 * `npm run build`   compile typescript to js

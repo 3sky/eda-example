@@ -41,18 +41,18 @@ export class EdaExampleStack extends cdk.Stack {
       false,
     );
 
-    const runnerSG = new ec2.SecurityGroup(this, "bastion-SG", {
-      securityGroupName: "Allow port 5000/tcp from bastion ",
+    const runnerSG = new ec2.SecurityGroup(this, "runnerSG", {
+      securityGroupName: "Allow port tcp 5000 from bastion",
       vpc: myVPC,
     });
     runnerSG.addIngressRule(
-      ec2.Peer.ipv4("10.19.0.36/32"),
+      ec2.Peer.ipv4("10.192.0.6/32"),
       ec2.Port.tcp(5000),
       "Allow 5000/tcp",
       false,
     );
 
-    const bastionSG = new ec2.SecurityGroup(this, "bastion-SG", {
+    const bastionSG = new ec2.SecurityGroup(this, "bastionSG", {
       securityGroupName: "Allow all SSH traffic",
       vpc: myVPC,
     });
@@ -86,8 +86,7 @@ export class EdaExampleStack extends cdk.Stack {
       detailedMonitoring: true,
     };
 
-    const machineList: string[] = ["bastion", "runner"];
-    //const machineList: string[] = ["bastion", "runner", "compute"];
+    const machineList: string[] = ["bastion", "runner", "compute"];
 
     const commandsUserData = ec2.UserData.forLinux();
     const userData = new ec2.MultipartUserData();
@@ -103,9 +102,10 @@ export class EdaExampleStack extends cdk.Stack {
       `echo 'export JAVA_HOME=/usr/lib/jvm/jre-17-openjdk' >> /etc/profile`,
       `pip3 install wheel ansible ansible-rulebook ansible-runner`,
       `echo 'export PATH=$PATH:/usr/local/bin' >> /etc/profile`,
-      `mkdir /opt/ansible && chown -R ec2-user:. /opt/ansible`,
-      `git clone https://github.com/3sky/eda-example-ansible`,
-      `cd /opt/ansible/eda-example-ansible && ansible-galaxy collection install -r collections/requirements.yml -p collections`,
+      `mkdir /opt/ansible`,
+      `git clone https://github.com/3sky/eda-example-ansible /opt/ansible/eda-example-ansible`,
+      `cd /opt/ansible/eda-example-ansible && /usr/local/bin/ansible-galaxy collection install -r collections/requirements.yml -p collections`,
+      `chown -R ec2-user:ec2-user /opt/ansible/*`,
     );
 
     machineList.forEach((host) => {
@@ -116,7 +116,7 @@ export class EdaExampleStack extends cdk.Stack {
           vpcSubnets: {
             subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
           },
-          privateIpAddress: "10.192.0.111",
+          privateIpAddress: "10.192.0.99",
           securityGroup: generalSG,
           ...defaultInstanceProps,
         });
@@ -127,11 +127,11 @@ export class EdaExampleStack extends cdk.Stack {
           vpcSubnets: {
             subnetType: ec2.SubnetType.PUBLIC,
           },
-          privateIpAddress: "10.192.0.36",
+          privateIpAddress: "10.192.0.6",
           securityGroup: bastionSG,
           ...defaultInstanceProps,
         });
-        new cdk.CfnOutput(this, "bastion", {
+        new cdk.CfnOutput(this, "bastionOutput", {
           value: bastion.instancePublicIp,
           description: "Public IP address of the bastion instance",
         });
@@ -141,7 +141,7 @@ export class EdaExampleStack extends cdk.Stack {
           vpcSubnets: {
             subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
           },
-          privateIpAddress: "10.192.0.90",
+          privateIpAddress: "10.192.0.86",
           securityGroup: generalSG,
           ...defaultInstanceProps,
         });
