@@ -105,7 +105,7 @@ export class EdaExampleStack extends cdk.Stack {
       `echo 'export PATH=$PATH:/usr/local/bin' >> /etc/profile`,
       `mkdir /opt/ansible && chown -R ec2-user:. /opt/ansible`,
       `git clone https://github.com/3sky/eda-example-ansible`,
-      `cd /opt/ansible/eda-example-ansible && ansible-galaxy collection install -r collections/requirments.yml -p collections`,
+      `cd /opt/ansible/eda-example-ansible && ansible-galaxy collection install -r collections/requirements.yml -p collections`,
     );
 
     machineList.forEach((host) => {
